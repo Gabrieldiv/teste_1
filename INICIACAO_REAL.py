@@ -22,11 +22,30 @@ def carregar_dataset(caminho_csv: str) -> pd.DataFrame:
 # ANÁLISES
 # -----------------------------------------------------------------------------
 
-def info_basicas(df: pd.DataFrame) -> str:
+def verificar_id(df: pd.DataFrame) -> str | None:
+    """Verifica se a primeira coluna é um ID.
+
+    Checa se a sílaba 'id' aparece no nome da primeira coluna.
+    Retorna o nome da coluna se for ID, ou None se não for.
+    """
+    primeira_coluna = df.columns[0]
+    if "id" in primeira_coluna.lower():
+        return primeira_coluna
+    return None
+
+
+def info_basicas(df: pd.DataFrame, coluna_id: str | None) -> str:
     linhas, colunas = df.shape
+
+    # Monta a linha sobre ID dependendo do resultado de verificar_id
+    if coluna_id:
+        linha_id = f"Coluna de ID detectada: {coluna_id}"
+    else:
+        linha_id = "Nenhuma coluna de ID detectada."
 
     linhas_texto = [
         "=== INFORMAÇÕES BÁSICAS ===",
+        linha_id,
         f"Linhas    : {linhas}",
         f"Colunas   : {colunas}",
         "",
@@ -65,14 +84,16 @@ def processar_pasta(pasta_dados: str = "data") -> None:
     arquivos_csv = [
         os.path.join(pasta_dados, arquivo)
         for arquivo in os.listdir(pasta_dados)
-        if arquivo.endswith(".csv")]
-    
+        if arquivo.endswith(".csv")
+    ]
+
     for caminho_csv in arquivos_csv:
         print(f"\nProcessando: {caminho_csv}")
         print("-" * 40)
 
         df = carregar_dataset(caminho_csv)
-        relatorio = info_basicas(df)
+        coluna_id = verificar_id(df)        # detecta o ID
+        relatorio = info_basicas(df, coluna_id)  # passa para o relatório
 
         print(relatorio)
 
